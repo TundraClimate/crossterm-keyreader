@@ -20,7 +20,7 @@ jobs:
           command: doc
           args: --target-dir ./docs
       - name: Create index
-        run: echo "<meta http-equiv=\"refresh\" content=\"0; url=crossterm-keyreader\">" > ./docs/doc/index.html
+        run: echo "<meta http-equiv=\"refresh\" content=\"0; url=crossterm_keyreader\">" > ./docs/doc/index.html
       - name: Publish docs
         uses: peaceiris/actions-gh-pages@v4
         with:
