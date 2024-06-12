@@ -24,20 +24,25 @@
 //! ```ignore
 //! #[tokio::main]
 //! async fn main() {
-//!     let mut rc = crossterm_keyreader::spawn();
+//!     let (mut rc, shatdown) = crossterm_keyreader::spawn();
 //!     loop {
 //!         if let Ok(event) = rc.try_recv() {
 //!             println!("KeyEvent is: {:?}", event);
 //!         }
 //!     }
+//!     shatdown.send(()).unwrap();
 //! }
 //! ```
 
 use crossterm::event;
 use crossterm::event::Event;
 use crossterm::event::KeyEvent;
+use std::thread;
+use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::Receiver;
+use tokio::sync::oneshot;
+use tokio::sync::oneshot::Sender;
 
 /// Spawns a channel to handle key input events asynchronously.
 ///
@@ -54,12 +59,13 @@ use tokio::sync::mpsc::Receiver;
 /// ```ignore
 /// #[tokio::main]
 /// async fn main() {
-///     let mut rc = crossterm_keyreader::spawn();
+///     let (mut rc, shatdown) = crossterm_keyreader::spawn();
 ///     loop {
 ///         if let Ok(event) = rc.try_recv() {
 ///             println!("KeyEvent is: {:?}", event);
 ///         }
 ///     }
+///     shatdown.send(()).unwrap();
 /// }
 /// ```
 ///
@@ -67,20 +73,26 @@ use tokio::sync::mpsc::Receiver;
 ///
 /// - This function must be used within a Tokio runtime.
 /// - The channel buffer size is set to 100. If this capacity is exceeded, an error will occur.
-pub fn spawn() -> Receiver<KeyEvent> {
+pub fn spawn() -> (Receiver<KeyEvent>, Sender<()>) {
     let (tx, rx) = mpsc::channel::<KeyEvent>(100);
+    let (shatdown, mut sd_signal) = oneshot::channel::<()>();
 
     tokio::spawn(async move {
         loop {
-            if let Ok(event) = event::read() {
-                if let Event::Key(event) = event {
+            if let Ok(event) = tokio::task::spawn_blocking(|| event::read()).await {
+                if let Ok(Event::Key(event)) = event {
                     tx.send(event)
                         .await
                         .expect("keyreader buffer capacity reached.");
                 }
             }
+
+            if let Ok(_) = sd_signal.try_recv() {
+                break;
+            }
+            thread::sleep(Duration::from_millis(1));
         }
     });
 
-    rx
+    (rx, shatdown)
 }
