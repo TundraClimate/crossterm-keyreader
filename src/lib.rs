@@ -21,6 +21,66 @@
 //!
 //! ## Example
 //!
+//! ```ignore
+//! #[tokio::main]
+//! async fn main() {
+//!     let mut rc = crossterm_keyreader::spawn();
+//!     loop {
+//!         if let Ok(event) = rc.try_recv() {
+//!             println!("KeyEvent is: {:?}", event);
+//!         }
+//!     }
+//! }
 //! ```
-//! // Example usage here.
-//! ```
+
+use crossterm::event;
+use crossterm::event::Event;
+use crossterm::event::KeyEvent;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::Receiver;
+
+/// Spawns a channel to handle key input events asynchronously.
+///
+/// This function spawns a new Tokio task that asynchronously reads key input events
+/// from the terminal. The events are sent through a channel, and you can receive
+/// these events using the returned receiver.
+///
+/// # Returns
+///
+/// `Receiver<KeyEvent>` - An asynchronous receiver for key events.
+///
+/// # Example
+///
+/// ```ignore
+/// #[tokio::main]
+/// async fn main() {
+///     let mut rc = crossterm_keyreader::spawn();
+///     loop {
+///         if let Ok(event) = rc.try_recv() {
+///             println!("KeyEvent is: {:?}", event);
+///         }
+///     }
+/// }
+/// ```
+///
+/// # Note
+///
+/// - This function must be used within a Tokio runtime.
+/// - The channel buffer size is set to 100. If this capacity is exceeded, an error will occur.
+pub fn spawn() -> Receiver<KeyEvent> {
+    let (tx, rx) = mpsc::channel::<KeyEvent>(100);
+
+    tokio::spawn(async move {
+        loop {
+            if let Ok(event) = event::read() {
+                if let Event::Key(event) = event {
+                    tx.send(event)
+                        .await
+                        .expect("keyreader buffer capacity reached.");
+                }
+            }
+        }
+    });
+
+    rx
+}

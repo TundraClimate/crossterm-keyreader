@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 crossterm = "0.27.0"
-tokio = { version = "1.38.0", features = ["rt", "sync", "net"] }
+tokio = { version = "1.38.0", features = ["rt", "sync", "net", "macros", "rt-multi-thread"] }
