@@ -203,7 +203,7 @@ woken task is added directly to the local queue. Otherwise, the task is
 added to the global queue. The current thread runtime does not use <a href="struct.Builder.html#structfield.disable_lifo_slot" title="field tokio::runtime::Builder::disable_lifo_slot">the lifo
 slot optimization</a>.</p>
 <h3 id="multi-threaded-runtime-behavior-at-the-time-of-writing"><a class="doc-anchor" href="#multi-threaded-runtime-behavior-at-the-time-of-writing">§</a>Multi threaded runtime (behavior at the time of writing)</h3>
-<p>This section describes how the <a href="crate::runtime::Builder::new_multi_thread">multi thread runtime</a> behaves today. This
+<p>This section describes how the <a href="struct.Builder.html#method.new_multi_thread" title="associated function tokio::runtime::Builder::new_multi_thread">multi thread runtime</a> behaves today. This
 behavior may change in future versions of Tokio.</p>
 <p>A multi thread runtime has a fixed number of worker threads, which are all
 created on startup. The multi thread runtime maintains one global queue, and

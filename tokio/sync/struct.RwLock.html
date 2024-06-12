@@ -122,7 +122,7 @@ need to use this rwlock in asynchronous code as well as in synchronous code.</p>
 to call some (synchronous) function which performs one of these
 <code>blocking_</code> operations, then consider wrapping that call inside
 <a href="../runtime/struct.Handle.html#method.spawn_blocking" title="method tokio::runtime::Handle::spawn_blocking"><code>spawn_blocking()</code></a>
-(or [<code>block_in_place()</code>][crate::task::block_in_place]).</li>
+(or <a href="../task/fn.block_in_place.html" title="fn tokio::task::block_in_place"><code>block_in_place()</code></a>).</li>
 </ul>
 <h5 id="examples-6"><a class="doc-anchor" href="#examples-6">§</a>Examples</h5>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::sync::Arc;
@@ -280,7 +280,7 @@ need to use this rwlock in asynchronous code as well as in synchronous code.</p>
 to call some (synchronous) function which performs one of these
 <code>blocking_</code> operations, then consider wrapping that call inside
 <a href="../runtime/struct.Handle.html#method.spawn_blocking" title="method tokio::runtime::Handle::spawn_blocking"><code>spawn_blocking()</code></a>
-(or [<code>block_in_place()</code>][crate::task::block_in_place]).</li>
+(or <a href="../task/fn.block_in_place.html" title="fn tokio::task::block_in_place"><code>block_in_place()</code></a>).</li>
 </ul>
 <h5 id="examples-11"><a class="doc-anchor" href="#examples-11">§</a>Examples</h5>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::sync::Arc;
