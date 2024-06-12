@@ -86,6 +86,18 @@
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
 </pre></div><pre class="rust"><code><span class="attr">#![warn(missing_docs)]
 #![warn(rustdoc::missing_crate_level_docs)]
 
@@ -112,20 +124,25 @@
 //! ```ignore
 //! #[tokio::main]
 //! async fn main() {
-//!     let mut rc = crossterm_keyreader::spawn();
+//!     let (mut rc, shatdown) = crossterm_keyreader::spawn();
 //!     loop {
 //!         if let Ok(event) = rc.try_recv() {
 //!             println!("KeyEvent is: {:?}", event);
 //!         }
 //!     }
+//!     shatdown.send(()).unwrap();
 //! }
 //! ```
 
 </span><span class="kw">use </span>crossterm::event;
 <span class="kw">use </span>crossterm::event::Event;
 <span class="kw">use </span>crossterm::event::KeyEvent;
+<span class="kw">use </span>std::thread;
+<span class="kw">use </span>std::time::Duration;
 <span class="kw">use </span>tokio::sync::mpsc;
 <span class="kw">use </span>tokio::sync::mpsc::Receiver;
+<span class="kw">use </span>tokio::sync::oneshot;
+<span class="kw">use </span>tokio::sync::oneshot::Sender;
 
 <span class="doccomment">/// Spawns a channel to handle key input events asynchronously.
 ///
@@ -142,12 +159,13 @@
 /// ```ignore
 /// #[tokio::main]
 /// async fn main() {
-///     let mut rc = crossterm_keyreader::spawn();
+///     let (mut rc, shatdown) = crossterm_keyreader::spawn();
 ///     loop {
 ///         if let Ok(event) = rc.try_recv() {
 ///             println!("KeyEvent is: {:?}", event);
 ///         }
 ///     }
+///     shatdown.send(()).unwrap();
 /// }
 /// ```
 ///
@@ -155,21 +173,27 @@
 ///
 /// - This function must be used within a Tokio runtime.
 /// - The channel buffer size is set to 100. If this capacity is exceeded, an error will occur.
-</span><span class="kw">pub fn </span>spawn() -&gt; Receiver&lt;KeyEvent&gt; {
+</span><span class="kw">pub fn </span>spawn() -&gt; (Receiver&lt;KeyEvent&gt;, Sender&lt;()&gt;) {
     <span class="kw">let </span>(tx, rx) = mpsc::channel::&lt;KeyEvent&gt;(<span class="number">100</span>);
+    <span class="kw">let </span>(shatdown, <span class="kw-2">mut </span>sd_signal) = oneshot::channel::&lt;()&gt;();
 
     tokio::spawn(<span class="kw">async move </span>{
         <span class="kw">loop </span>{
-            <span class="kw">if let </span><span class="prelude-val">Ok</span>(event) = event::read() {
-                <span class="kw">if let </span>Event::Key(event) = event {
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(event) = tokio::task::spawn_blocking(|| event::read()).<span class="kw">await </span>{
+                <span class="kw">if let </span><span class="prelude-val">Ok</span>(Event::Key(event)) = event {
                     tx.send(event)
                         .<span class="kw">await
                         </span>.expect(<span class="string">"keyreader buffer capacity reached."</span>);
                 }
             }
+
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw">_</span>) = sd_signal.try_recv() {
+                <span class="kw">break</span>;
+            }
+            thread::sleep(Duration::from_millis(<span class="number">1</span>));
         }
     });
 
-    rx
+    (rx, shatdown)
 }
 </code></pre></div></section></main></body></html>
