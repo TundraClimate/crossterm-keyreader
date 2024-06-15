@@ -1,0 +1,1 @@
+searchState.loadedDescShard("crossterm_keyreader", 0, "Crossterm KeyReader is a library crate for handling key …\nSpawns a channel to handle key input events asynchronously.")
