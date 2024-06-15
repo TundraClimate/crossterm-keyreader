@@ -90,7 +90,7 @@ pub fn spawn() -> (Receiver<KeyEvent>, Sender<()>) {
             if let Ok(_) = sd_signal.try_recv() {
                 break;
             }
-            thread::sleep(Duration::from_millis(1));
+            thread::sleep(Duration::from_millis(50));
         }
     });
 
