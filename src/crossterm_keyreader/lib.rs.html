@@ -188,7 +188,7 @@
             <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw">_</span>) = sd_signal.try_recv() {
                 <span class="kw">break</span>;
             }
-            thread::sleep(Duration::from_millis(<span class="number">50</span>));
+            thread::sleep(Duration::from_millis(<span class="number">100</span>));
         }
     });
 
